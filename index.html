@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Cấu hình importmap tĩnh cho "three" trên trình duyệt vì GLTFLoader import "three" là bare specifier -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -15,7 +24,6 @@
     <section class="product-overview">
         <div class="header-1">
             <h1>Every Rep Starts With</h1>
-            
         </div>
         <div class="header-2">
             <h1>GRND Shaker</h1>
@@ -33,7 +41,8 @@
                     <h2>Built to last</h2>
                 </div>
                 <div class="description">
-                    <p>Designed to match your pace, GRND runs all week on a single charge. No interruptions, no slowing down.</p>
+                    <p>Designed to match your pace, GRND runs all week on a single charge. No interruptions, no slowing
+                        down.</p>
                 </div>
             </div>
             <div class="tooltip">
@@ -45,13 +54,12 @@
                     <h2>Stay synced</h2>
                 </div>
                 <div class="description">
-                    <p>With app integration, GRND helps you stay consistent. Monitor intake, set goals, and make every sip count.</p>
+                    <p>With app integration, GRND helps you stay consistent. Monitor intake, set goals, and make every
+                        sip count.</p>
                 </div>
             </div>
         </div>
-        <div class="model-container">
-            
-        </div>
+        <div class="model-container"></div>
     </section>
     <section class="outro">
         <h1>Don't Just Train - GRND</h1>

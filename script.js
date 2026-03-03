@@ -1,62 +1,63 @@
-// Import các thư viện qua CDN ESM vì đang chạy trực tiếp trên trình duyệt (không dùng bundler)
-import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-import { GLTFLoader } from "https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
-import gsap from "https://unpkg.com/gsap@3.12.2/index.js";
-import { ScrollTrigger } from "https://unpkg.com/gsap@3.12.2/ScrollTrigger.js";
-// SplitText là plugin trả phí, tạm thời bỏ import nếu bạn không có file/plugin riêng
-// import { SplitText } from "https://unpkg.com/gsap@3.12.2/SplitText.js";
-// Để code còn chạy, mình tạo 1 class giả thay thế SplitText với API tối thiểu bạn đang dùng
-class SplitText {
-    constructor(selector, options) {
-        this.elements = Array.from(document.querySelectorAll(selector));
-        this.chars = [];
-        this.lines = [];
-        // Chỉ xử lý rất đơn giản cho demo
-        if (options?.type === "chars") {
-            this.chars = this.elements
-                .flatMap(el => el.textContent.split(""))
-                .map(c => {
-                    const span = document.createElement("span");
-                    span.textContent = c;
-                    return span;
-                });
-        }
-    }
-}
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import gsap from "https://unpkg.com/gsap@3.14.1/index.js";
+import { ScrollTrigger } from "https://unpkg.com/gsap@3.14.1/ScrollTrigger.js";
+import { SplitText } from "https://unpkg.com/gsap@3.14.1/SplitText.js";
 import Lenis from "https://unpkg.com/@studio-freight/lenis@1.0.39/dist/lenis.mjs";
 
 document.addEventListener("DOMContentLoaded", () => {
     gsap.registerPlugin(ScrollTrigger, SplitText);
-    
+
     const lenis = new Lenis();
     gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    const header1Split = new SplitText(".header-1 h1", {
-        type: "chars",
-        charsClass: "char",
+    document.fonts.ready.then(() => {
+        const header1Split = new SplitText(".header-1 h1", {
+            type: "chars",
+            charsClass: "char",
+        });
+
+        const titleSplits = new SplitText(".tooltip .title h2", {
+            type: "lines",
+            linesClass: "line",
+        });
+
+        const descriptionSplits = new SplitText(".tooltip .description p", {
+            type: "lines",
+            linesClass: "line",
+        });
+
+        header1Split.chars.forEach((char) => { char.innerHTML = `<span>${char.innerHTML}</span>` });
+        [...titleSplits.lines, ...descriptionSplits.lines].forEach((line) => { line.innerHTML = `<span>${line.innerHTML}</span>` });
+
+        ScrollTrigger.create({
+            trigger: ".product-overview",
+            start: "top 75%",
+            onEnter: () => gsap.to(".header-1 h1 .char > span", {
+                y: "0%",
+                duration: 1,
+                ease: "power3.out",
+                stagger: 0.025,
+            }),
+            onLeaveBack: () => gsap.to(".header-1 h1 .char > span", {
+                y: "100%",
+                duration: 1,
+                ease: "power3.out",
+                stagger: 0.025,
+            })
+        });
+
+        ScrollTrigger.refresh();
     });
 
-    const titleSplits = new SplitText(".tooltip .title h2", {
-        type: "lines",
-        charsClass: "line",
-    });
-
-    const descriptionSplits = new SplitText(".tooltip .description p", {
-        type: "lines",
-        charsClass: "line",
-    });
-    
-    header1Split.chars.forEach((char) => {char.innerHTML = `<span>${char.innerHTML}</span>`});
-    [...titleSplits.lines, ...descriptionSplits.lines].forEach((line) => {line.innerHTML = `<span>${line.innerHTML}</span>`});
-    
-    const animOptions = {duration: 1, ease: "power3.out", stagger: 0.025};
+    const animOptions = { duration: 1, ease: "power3.out", stagger: 0.025 };
     const tooltipSelectors = [
         {
             trigger: 0.65,
             elements: [
                 ".tooltip:nth-child(1) .icon ion-icon",
-                ".tooltip:nth-child(1) .title .line",
+                ".tooltip:nth-child(1) .title .line > span",
                 ".tooltip:nth-child(1) .description .line > span",
             ]
         },
@@ -70,40 +71,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     ]
 
-    ScrollTrigger.create({
-        trigger: ".product-overview",
-        start: "75% bottom",
-        onEnter: () => {
-            gsap.to(".header-1 h1 .char > span", {
-                y: "0%",
-            duration: 1,
-            ease: "power3.out",
-            stagger: 0.025,
-            })
-        },
-        onLeaveBack: () => {
-            gsap.to(".header-1 h1 .char > span", {
-                y: "100%",
-                duration: 1,
-                ease: "power3.out",
-                stagger: 0.025,
-            })
-        }
-    })
-
     let model,
-    currentRotation = 0,
-    modelSize;
+        currentRotation = 0,
+        modelSize;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 
     renderer.setClearColor(0x000000, 0);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.outputEncoding = THREE.LinearEncoding;
+    renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     renderer.toneMapping = THREE.NoToneMapping;
     renderer.toneMappingExposure = 1.0;
     document.querySelector(".model-container").appendChild(renderer.domElement);
@@ -122,8 +102,8 @@ document.addEventListener("DOMContentLoaded", () => {
     fillLight.position.set(-2, 0, -2);
     scene.add(fillLight);
 
-    function setupModel(){
-        if(!model || !modelSize) return;
+    function setupModel() {
+        if (!model || !modelSize) return;
 
         const isMobile = window.innerWidth < 1000;
         const box = new THREE.Box3().setFromObject(model);
@@ -131,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         model.position.set(
             isMobile ? center.x + modelSize.x * 1 : -center.x - modelSize.x * 0.4,
-            -center.y + modelSize.y * 0.005,
+            -center.y + modelSize.y * 0.085,
             -center.z
         )
 
@@ -150,14 +130,14 @@ document.addEventListener("DOMContentLoaded", () => {
         model = gltf.scene;
 
         model.traverse((node) => {
-            if(node.isMesh && node.material instanceof THREE.MeshStandardMaterial){
+            if (node.isMesh && node.material instanceof THREE.MeshStandardMaterial) {
                 Object.assign(node.material, {
                     metalness: 0.05,
                     roughness: 0.9,
                 });
             }
         })
-        
+
         const box = new THREE.Box3().setFromObject(model);
         const size = box.getSize(new THREE.Vector3());
         modelSize = size;
@@ -166,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setupModel();
     });
 
-    function animate(){
+    function animate() {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
@@ -186,14 +166,12 @@ document.addEventListener("DOMContentLoaded", () => {
         end: `+=${window.innerHeight * 10}px`,
         pin: true,
         pinSpacing: true,
-        scrub: true,
-        onUpdate: (self) => {
-            const progress = self.progress;
-
+        scrub: 1,
+        onUpdate: ({ progress }) => {
             const headerProgress = Math.max(0, Math.min(1, (progress - 0.05) / 0.3));
             gsap.to(".header-1", {
                 xPercent:
-                progress < 0.05 ? 0 : progress > 0.35 ? -100 : -100 * headerProgress,
+                    progress < 0.05 ? 0 : progress > 0.35 ? -100 : -100 * headerProgress,
             });
 
             const maskSize = progress < 0.2 ? 0 : progress > 0.3 ? 100 : 100 * ((progress - 0.2) / 0.1);
@@ -208,20 +186,20 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const scaleX = progress < 0.45 ? 0 : progress > 0.65 ? 100 : 100 * ((progress - 0.45) / 0.2);
-            gsap.to(".tooltips .divider", {scaleX: `${scaleX}%`, ...animOptions});
+            gsap.to(".tooltips .divider", { scaleX: `${scaleX}%`, ...animOptions });
 
-            tooltipSelectors.forEach(({trigger, elements}) => {
+            tooltipSelectors.forEach(({ trigger, elements }) => {
                 gsap.to(elements, {
-                    y: progress > trigger ? 0 : "100%",
+                    y: progress > trigger ? 0 : "125%",
                     ...animOptions,
                 });
             });
 
-            if(model && progress > 0.05){
+            if (model && progress > 0.05) {
                 const rotationProgress = (progress - 0.05) / 0.95;
                 const targetRotation = Math.PI * 3 * 4 * rotationProgress;
                 const rotationDiff = targetRotation - currentRotation;
-                if(Math.abs(rotationDiff) > 0.001){
+                if (Math.abs(rotationDiff) > 0.001) {
                     model.rotateOnAxis(new THREE.Vector3(0, 1, 0), rotationDiff);
                     currentRotation = targetRotation;
                 }
