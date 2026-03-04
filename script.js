@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
             trigger: 0.65,
             elements: [
-                ".tooltip:nth-child(1) .icon ion-icon",
+                ".tooltip:nth-child(1) .avatar",
                 ".tooltip:nth-child(1) .title .line > span",
                 ".tooltip:nth-child(1) .description .line > span",
             ]
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
             trigger: 0.85,
             elements: [
-                ".tooltip:nth-child(2) .icon ion-icon",
+                ".tooltip:nth-child(2) .avatar",
                 ".tooltip:nth-child(2) .title .line > span",
                 ".tooltip:nth-child(2) .description .line > span",
             ]
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
             -center.z
         )
 
-        model.rotation.z = isMobile ? 0 : THREE.MathUtils.degToRad(-25);
+        model.rotation.z = isMobile ? 0 : THREE.MathUtils.degToRad(-35);
 
         const cameraDistance = isMobile ? 2 : 1.25;
         camera.position.set(

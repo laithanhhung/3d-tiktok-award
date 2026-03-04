@@ -4,13 +4,20 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
 
+:root {
+    --bg-dark: #0a0a0a;
+    --bg-light: #f5f0e8;
+    --gold: #d4a84b;
+    --gold-bright: #ffd700;
+    --text-light: #f5f0e8;
+    --text-muted: #8a8070;
 }
 
 body {
     font-family: 'PP Neue Montreal', sans-serif;
     overflow-x: hidden;
-    /* Ngăn chặn scroll ngang */
     width: 100vw;
 }
 
@@ -21,38 +28,66 @@ h1 {
 }
 
 h2 {
-    font-size: 3rem;
+    font-size: 2.75rem;
     font-weight: 500;
     line-height: 1.125;
     letter-spacing: -0.03rem;
-
+    color: var(--gold);
 }
 
 p {
-    font-size: 1.1rem;
-    font-weight: 500;
-    line-height: 1.5;
+    font-size: 1.0rem;
+    font-weight: 400;
+    line-height: 1.6;
 }
 
 section {
     position: relative;
     width: 100vw;
     height: 100svh;
-    background-color: #e0dfdf;
-    color: #0d0d0d;
+    background-color: var(--bg-light);
+    color: var(--bg-dark);
     overflow: hidden;
 }
 
+/* ---- Intro ---- */
 .intro,
 .outro {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #0d0d0d;
-    color: #e0dfdf;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
     padding: 2rem;
 }
 
+.intro-content,
+.outro-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    max-width: 700px;
+}
+
+.intro-label,
+.outro-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+}
+
+.outro p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ---- 3D Model ---- */
 .model-container {
     position: absolute;
     top: 50%;
@@ -63,6 +98,7 @@ section {
     z-index: 100;
 }
 
+/* ---- Headers ---- */
 .header-1 {
     position: relative;
     width: 200vw;
@@ -74,9 +110,9 @@ section {
     position: fixed;
     top: 0;
     left: 0;
-    width: 150vw;
+    width: 200vw;
     height: 100svh;
-    color: #e0dfdf;
+    color: var(--text-light);
     transform: translateX(100%);
     z-index: 2;
 }
@@ -91,40 +127,45 @@ section {
 .header-1 h1,
 .header-2 h1 {
     width: 100%;
-    font-size: 15vw;
+    font-size: 12vw;
     line-height: 1.25;
     letter-spacing: -0.02em;
     white-space: nowrap;
 }
 
+.header-2 h1 {
+    font-size: 7vw;
+}
+
+/* ---- Circular Mask ---- */
 .circular-mask {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #0d0d0d;
+    background-color: var(--bg-dark);
     clip-path: circle(0% at 50% 50%);
 }
 
+/* ---- Creator Tooltips ---- */
 .tooltips {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 75%;
-    height: 75%;
+    width: 80%;
+    height: 80%;
     display: flex;
-    gap: 15rem;
-
+    gap: 10rem;
 }
 
 .tooltip {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.5 rem;
-    color: #e0dfdf;
+    gap: 0.75rem;
+    color: var(--text-light);
 }
 
 .tooltip:nth-child(2) {
@@ -136,34 +177,66 @@ section {
     position: relative;
     width: 100%;
     height: 1px;
-    background-color: #5f5f5f;
+    background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
     margin: 0.5rem 0;
     transform: scaleX(0);
 }
 
 .tooltip:nth-child(1) .divider {
-    transform-origin: right center;
-}
-
-.tooltip:nth-child(2) .divider {
     transform-origin: left center;
 }
 
-.tooltip .icon {
-    font-size: 2.5rem;
+.tooltip:nth-child(2) .divider {
+    transform-origin: right center;
+    background: linear-gradient(90deg, transparent 0%, var(--gold) 100%);
+}
+
+/* ---- Creator Avatar ---- */
+/* Clip wrapper: tương tự như .line — overflow:hidden để giấu .avatar bên dưới */
+.tooltip .avatar-clip {
     overflow: hidden;
+    display: flex;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+}
+
+/* Container animate chính nó trượt lên, giống ion-icon pattern cũ */
+.tooltip .avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 20px rgba(212, 168, 75, 0.25);
+    flex-shrink: 0;
+    transform: translateY(120%);
+}
+
+.tooltip .avatar img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+    filter: grayscale(20%);
+    transition: filter 0.4s ease;
+}
+
+.tooltip .avatar:hover img {
+    filter: grayscale(0%);
 }
 
 .tooltip .description {
-    color: #5f5f5f;
+    color: var(--text-muted);
 }
 
-.tooltip:nth-child(2) .icon,
 .tooltip:nth-child(2) .description,
 .tooltip .description {
-    width: 70%;
+    width: 80%;
 }
 
+/* ---- SplitText animation helpers ---- */
 .header-1 h1 .char,
 .tooltip .title .line,
 .tooltip .description .line {
@@ -172,7 +245,6 @@ section {
 }
 
 .header-1 h1 .char>span,
-.tooltip .icon ion-icon,
 .tooltip .title .line>span,
 .tooltip .description .line>span {
     position: relative;
@@ -181,14 +253,14 @@ section {
     will-change: transform;
 }
 
+/* ---- Responsive ---- */
 @media (max-width: 1000px) {
     h1 {
         font-size: 2.5rem;
     }
 
-    h2,
-    .tooltip .icon {
-        font-size: 1.25rem;
+    h2 {
+        font-size: 1.6rem;
     }
 
     .tooltips {
@@ -208,6 +280,7 @@ section {
 
     .tooltip:nth-child(2) {
         justify-content: center;
+        align-items: center;
     }
 
     .tooltip .divider {
@@ -216,11 +289,12 @@ section {
         margin-bottom: 1rem;
     }
 
+    .tooltip:nth-child(1) .divider,
     .tooltip:nth-child(2) .divider {
         transform-origin: center center;
+        background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
     }
 
-    .tooltip:nth-child(2) .icon,
     .tooltip:nth-child(2) .title,
     .tooltip:nth-child(2) .description,
     .tooltip .description {
@@ -234,10 +308,22 @@ section {
         display: flex;
         align-items: center;
     }
+
+    .header-2 h1 {
+        font-size: 5vw;
+    }
 }
 
 @media (max-width: 500px) {
     h1 {
         font-size: 1.8rem;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+    }
+
+    .header-2 h1 {
+        font-size: 6vw;
     }
 }
