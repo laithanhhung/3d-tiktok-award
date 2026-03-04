@@ -133,14 +133,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const center = box.getCenter(new THREE.Vector3());
 
         model.position.set(
-            isMobile ? 0 : -center.x - modelSize.x * 0.4,
-            isMobile ? -center.y + modelSize.y * 0.5 : -center.y + modelSize.y * 0.085,
+            isMobile ? center.x + modelSize.x * 1 : -center.x - modelSize.x * 0.4,
+            -center.y + modelSize.y * 0.085,
             -center.z
         )
 
         model.rotation.z = isMobile ? 0 : THREE.MathUtils.degToRad(-25);
 
-        const cameraDistance = isMobile ? 1.8 : 1.25;
+        const cameraDistance = isMobile ? 2 : 1.25;
         camera.position.set(
             0,
             0,
