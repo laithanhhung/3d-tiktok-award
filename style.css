@@ -9,6 +9,9 @@
 
 body {
     font-family: 'PP Neue Montreal', sans-serif;
+    overflow-x: hidden;
+    /* Ngăn chặn scroll ngang */
+    width: 100vw;
 }
 
 h1 {
@@ -91,6 +94,7 @@ section {
     font-size: 15vw;
     line-height: 1.25;
     letter-spacing: -0.02em;
+    white-space: nowrap;
 }
 
 .circular-mask {
@@ -179,41 +183,61 @@ section {
 
 @media (max-width: 1000px) {
     h1 {
-        text-align: center;
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
 
     h2,
     .tooltip .icon {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 
     .tooltips {
         width: 100%;
         align-items: center;
         flex-direction: column;
-        gap: 2rem;
+        gap: 3rem;
+        padding-top: 5rem;
     }
 
     .tooltip {
-        width: 85%;
+        width: 90%;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
     }
 
     .tooltip:nth-child(2) {
-        justify-content: flex-start;
-        align-items: center;
+        justify-content: center;
     }
 
     .tooltip .divider {
-        width: 70%;
+        width: 100%;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
     }
 
     .tooltip:nth-child(2) .divider {
-        transform-origin: right center;
+        transform-origin: center center;
     }
 
     .tooltip:nth-child(2) .icon,
-    .tooltip:nth-child(2) .title {
+    .tooltip:nth-child(2) .title,
+    .tooltip:nth-child(2) .description,
+    .tooltip .description {
         width: 100%;
+    }
+
+    .header-1,
+    .header-2 {
+        height: auto;
+        min-height: 50svh;
+        display: flex;
+        align-items: center;
+    }
+}
+
+@media (max-width: 500px) {
+    h1 {
+        font-size: 1.8rem;
     }
 }

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import gsap from "https://unpkg.com/gsap@3.14.1/index.js";
 import { ScrollTrigger } from "https://unpkg.com/gsap@3.14.1/ScrollTrigger.js";
 import { SplitText } from "https://unpkg.com/gsap@3.14.1/SplitText.js";
@@ -28,8 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
             linesClass: "line",
         });
 
-        header1Split.chars.forEach((char) => { char.innerHTML = `<span>${char.innerHTML}</span>` });
-        [...titleSplits.lines, ...descriptionSplits.lines].forEach((line) => { line.innerHTML = `<span>${line.innerHTML}</span>` });
+        header1Split.chars.forEach((char) => { char.innerHTML = `<span>${char.innerText}</span>` });
+        [...titleSplits.lines, ...descriptionSplits.lines].forEach((line) => { line.innerHTML = `<span>${line.innerText}</span>` });
 
         ScrollTrigger.create({
             trigger: ".product-overview",
@@ -84,23 +85,45 @@ document.addEventListener("DOMContentLoaded", () => {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-    renderer.toneMapping = THREE.NoToneMapping;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
     document.querySelector(".model-container").appendChild(renderer.domElement);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment()).texture;
 
-    const mainLight = new THREE.DirectionalLight(0xffffff, 1.0);
-    mainLight.position.set(1, 2, 3);
-    mainLight.castShadow = true;
-    mainLight.shadow.bias = -0.001;
-    mainLight.shadow.mapSize.width = 1024;
-    mainLight.shadow.mapSize.height = 1024;
-    scene.add(mainLight);
+    // Giảm bớt ánh sáng môi trường để hiệu ứng ánh đèn mờ ảo hơn
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    fillLight.position.set(-2, 0, -2);
+    // Đèn trần sân khấu chiếu chéo từ trên xuống với ánh sáng vàng đồng (Gold)
+    const stageLight = new THREE.SpotLight(0xffa500, 150.0);
+    stageLight.position.set(15, 30, 15); // Đặt góc chéo rất cao, chiếu xéo xuống
+    stageLight.angle = Math.PI / 4; // Góc chiếu rộng hơn để bao phủ toàn bộ khối vật thể
+    stageLight.penumbra = 0.5; // Viền mờ cho mềm mại
+    stageLight.decay = 2; // Độ suy giảm ánh sáng
+    stageLight.distance = 100;
+    stageLight.castShadow = true;
+    stageLight.shadow.bias = -0.001;
+    stageLight.shadow.mapSize.width = 1024;
+    stageLight.shadow.mapSize.height = 1024;
+    scene.add(stageLight);
+
+    // Đèn phụ trợ (Fill) chiếu hắt nhẹ từ bên trái để tạo luồng ven (Rim light) màu cam đỏ
+    const fillLight = new THREE.DirectionalLight(0xff6600, 10.0);
+    fillLight.position.set(-5, 0, -2);
     scene.add(fillLight);
+
+    // Đèn hắt mũi nhẹ từ góc chéo dưới lên để mặt trước không bị chìm hoàn toàn vào bóng tối
+    const bounceLight = new THREE.DirectionalLight(0xffccaa, 5.0);
+    bounceLight.position.set(2, -4, 4);
+    scene.add(bounceLight);
+
+    // Đèn rọi thẳng mặt chính diện để mảng chữ T không bao giờ bị đen kịt sẫm màu
+    const frontLight = new THREE.SpotLight(0xffffff, 40.0);
+    frontLight.position.set(0, 0, 15);
+    frontLight.angle = Math.PI / 4;
+    frontLight.penumbra = 0.8; // Làm viền sáng thật mềm để không cướp spotlight ánh vàng
+    scene.add(frontLight);
 
     function setupModel() {
         if (!model || !modelSize) return;
@@ -110,14 +133,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const center = box.getCenter(new THREE.Vector3());
 
         model.position.set(
-            isMobile ? center.x + modelSize.x * 1 : -center.x - modelSize.x * 0.4,
-            -center.y + modelSize.y * 0.085,
+            isMobile ? 0 : -center.x - modelSize.x * 0.4,
+            isMobile ? -center.y + modelSize.y * 0.5 : -center.y + modelSize.y * 0.085,
             -center.z
         )
 
         model.rotation.z = isMobile ? 0 : THREE.MathUtils.degToRad(-25);
 
-        const cameraDistance = isMobile ? 2 : 1.25;
+        const cameraDistance = isMobile ? 1.8 : 1.25;
         camera.position.set(
             0,
             0,
@@ -132,8 +155,9 @@ document.addEventListener("DOMContentLoaded", () => {
         model.traverse((node) => {
             if (node.isMesh && node.material instanceof THREE.MeshStandardMaterial) {
                 Object.assign(node.material, {
-                    metalness: 0.05,
-                    roughness: 0.9,
+                    metalness: 1,
+                    roughness: 0.2,
+                    color: new THREE.Color(0xffd700), // Phủ màu vàng kim để nhuộm màu tia sáng phản chiếu
                 });
             }
         })
@@ -180,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const header2Progress = (progress - 0.15) / 0.35;
-            const header2XPercent = progress < 0.15 ? 100 : progress > 0.5 ? -200 : 100 - 300 * header2Progress;
+            const header2XPercent = progress < 0.15 ? 100 : progress > 0.5 ? -250 : 100 - 350 * header2Progress;
             gsap.to(".header-2", {
                 xPercent: header2XPercent,
             });
@@ -203,6 +227,23 @@ document.addEventListener("DOMContentLoaded", () => {
                     model.rotateOnAxis(new THREE.Vector3(0, 1, 0), rotationDiff);
                     currentRotation = targetRotation;
                 }
+
+                // --- MỚI: Đèn xoay trượt theo Scroll ---
+                // Ánh đèn quay vòng quanh vật thể nhiều góc độ
+                const lightAngle = progress * Math.PI * 4; // Xoay 2 vòng trong suốt quá trình cuộn
+                stageLight.position.x = Math.sin(lightAngle) * 20; // Quỹ đạo X
+                stageLight.position.z = Math.cos(lightAngle) * 20; // Quỹ đạo Z
+                stageLight.position.y = 30 + Math.sin(progress * Math.PI * 2) * 5; // Độ cao đèn hơi nhấp nhô nhưng vẫn giữ góc chiếu chéo từ trên cao
+
+                // Tính toán thay đổi ánh sáng mờ dần hoặc đổi màu phông nền
+                // progress < 0.2: nền trắng #ffffff, progress > 0.4: nền đen #0d0d0d
+                const bgProgress = Math.max(0, Math.min(1, (progress - 0.2) / 0.3));
+                // Công thức mix màu cơ bản: r, g, b từ 255 -> 13
+                const whiteToBlackVal = Math.floor(255 - (242 * bgProgress));
+                gsap.to(".product-overview", {
+                    backgroundColor: `rgb(${whiteToBlackVal}, ${whiteToBlackVal}, ${whiteToBlackVal})`,
+                    duration: 0.1
+                });
             }
         }
     });
