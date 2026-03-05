@@ -15,8 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.fonts.ready.then(() => {
         const header1Split = new SplitText(".header-1 h1", {
-            type: "chars",
-            charsClass: "char",
+            type: "words",
+            wordsClass: "word",
         });
 
         const titleSplits = new SplitText(".tooltip .title h2", {
@@ -29,19 +29,19 @@ document.addEventListener("DOMContentLoaded", () => {
             linesClass: "line",
         });
 
-        header1Split.chars.forEach((char) => { char.innerHTML = `<span>${char.innerText}</span>` });
+        header1Split.words.forEach((word) => { word.innerHTML = `<span>${word.innerText}</span>` });
         [...titleSplits.lines, ...descriptionSplits.lines].forEach((line) => { line.innerHTML = `<span>${line.innerText}</span>` });
 
         ScrollTrigger.create({
             trigger: ".product-overview",
             start: "top 75%",
-            onEnter: () => gsap.to(".header-1 h1 .char > span", {
+            onEnter: () => gsap.to(".header-1 h1 .word > span", {
                 y: "0%",
                 duration: 1,
                 ease: "power3.out",
                 stagger: 0.025,
             }),
-            onLeaveBack: () => gsap.to(".header-1 h1 .char > span", {
+            onLeaveBack: () => gsap.to(".header-1 h1 .word > span", {
                 y: "100%",
                 duration: 1,
                 ease: "power3.out",
